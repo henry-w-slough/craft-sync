@@ -1,8 +1,8 @@
 import fastapi
-
-from metadata.models.world_response import WorldResponse
 from services.world_service import WorldService
-from models.world import World
+
+from models.world_response import WorldResponse
+from models.world_create_request import WorldCreateRequest
 
 
 class WorldController:
@@ -12,9 +12,17 @@ class WorldController:
         
         self.world_service = WorldService()
         
-        app.post("/", status_code=201)(self.add_world)
+        app.post("/world", status_code=201)(self.add_world)
 
 
-    async def add_world(self, world: World) -> WorldResponse:
+    async def add_world(self, request: WorldCreateRequest) -> WorldResponse:
 
-        return await self.world_service.add_world()
+        print(request.name, request.description)
+        
+        created_world = await self.world_service.add_world(request)
+
+        return WorldResponse(
+            name = created_world.name,
+            description = created_world.description,
+            date_added = created_world.date_added
+        )

@@ -9,6 +9,6 @@ class WorldRepository:
         pass
 
 
-    def add_world(self, world: World) -> World:
+    async def add_world(self, world: World) -> World:
         #This is temp as a placeholder return for the structure
         return world
