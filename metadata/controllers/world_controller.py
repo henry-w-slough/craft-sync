@@ -1,6 +1,6 @@
 import fastapi
 
-from responses.world_response import WorldResponse
+from metadata.models.world_response import WorldResponse
 from services.world_service import WorldService
 from models.world import World
 
