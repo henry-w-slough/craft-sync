@@ -8,16 +8,14 @@ from models.world_create_request import WorldCreateRequest
 class WorldController:
 
 
-    def __init__(self, app: fastapi.FastAPI) -> None:
+    def __init__(self, app: fastapi.FastAPI, world_service: WorldService) -> None:
         
-        self.world_service = WorldService()
+        self.world_service = world_service
         
         app.post("/world", status_code=201)(self.add_world)
 
 
     async def add_world(self, request: WorldCreateRequest) -> WorldResponse:
-
-        print(request.name, request.description)
         
         created_world = await self.world_service.add_world(request)
 

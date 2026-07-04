@@ -7,7 +7,10 @@ import httpx
 
 
 async def main():
-    pass
+    print(httpx.post(
+        f"http://localhost:8020/world",
+        json={"name": "world", "description": "my first world"}
+        ))
 
 
 if __name__ == "__main__":

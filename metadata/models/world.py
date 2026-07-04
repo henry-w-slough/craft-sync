@@ -1,5 +1,5 @@
 import datetime
-
+import uuid
 
 class World:
 
@@ -8,3 +8,4 @@ class World:
         self.name: str = name
         self.description: str = description
         self.date_added: datetime.datetime = datetime.datetime.now()
+        self.id = uuid.uuid4()

@@ -6,9 +6,9 @@ from repositories.world_repository import WorldRepository
 class WorldService:
 
 
-    def __init__(self):
+    def __init__(self, world_repository: WorldRepository):
         
-        self.world_repository = WorldRepository()
+        self.world_repository = world_repository
 
 
     async def add_world(self, world_create_request: WorldCreateRequest) -> World:
