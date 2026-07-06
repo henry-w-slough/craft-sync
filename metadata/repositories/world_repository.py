@@ -17,7 +17,18 @@ class WorldRepository(RepositoryBase):
         """
         Prepares database for storage by adding necessary tables to it.
         """
-        pass
+        async with aiosqlite.connect(self.db_conn_path) as db:
+
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS worlds (
+                    id TEXT PRIMARY KEY,
+                    name TEXT,
+                    description TEXT,
+                    date_added TEXT
+                )
+            """)
+
+            await db.commit()
             
 
     async def add_world(self, world: World) -> World:
@@ -29,7 +40,7 @@ class WorldRepository(RepositoryBase):
 
             await db.execute(
                 "INSERT INTO worlds (id, name, description, date_added) VALUES (?, ?, ?, ?)",
-                (world.id, world.name, world.description, world.date_added)
+                (str(world.id), world.name, world.description, world.date_added)
             )
             await db.commit()
 
