@@ -5,7 +5,7 @@ from models.world_response import WorldResponse
 from models.world_create_request import WorldCreateRequest
 
 
-class WorldController:
+class WorldController():
 
 
     def __init__(self, app: fastapi.FastAPI, world_service: WorldService) -> None:

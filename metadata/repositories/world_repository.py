@@ -1,9 +1,10 @@
 import aiosqlite
 
 from models.world import World
+from repositories.repository_base import RepositoryBase
 
 
-class WorldRepository:
+class WorldRepository(RepositoryBase):
 
 
     def __init__(self) -> None:
@@ -16,10 +17,8 @@ class WorldRepository:
         """
         Prepares database for storage by adding necessary tables to it.
         """
-        
         pass
             
-
 
     async def add_world(self, world: World) -> World:
         
