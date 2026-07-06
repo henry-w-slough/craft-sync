@@ -34,13 +34,10 @@ class WorldRepository(RepositoryBase):
     async def add_world(self, world: World) -> World:
         
         async with aiosqlite.connect(self.db_conn_path) as db:
-            #db config
-            db.row_factory = aiosqlite.Row
-            cursor = db.cursor()
 
             await db.execute(
                 "INSERT INTO worlds (id, name, description, date_added) VALUES (?, ?, ?, ?)",
-                (str(world.id), world.name, world.description, world.date_added)
+                (str(world.id), world.name, world.description, str(world.date_added))
             )
             await db.commit()
 
