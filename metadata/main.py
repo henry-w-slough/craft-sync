@@ -2,6 +2,7 @@ import fastapi
 import uvicorn
 
 import config
+
 from exceptions import global_exception_handler
 
 from controllers.world_controller import WorldController

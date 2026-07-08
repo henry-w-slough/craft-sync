@@ -1,4 +1,6 @@
 import aiosqlite
+import uuid
+import datetime
 
 from models.world import World
 from repositories.repository_base import RepositoryBase
@@ -37,10 +39,22 @@ class WorldRepository(RepositoryBase):
 
             await db.execute(
                 "INSERT INTO worlds (id, name, description, date_added) VALUES (?, ?, ?, ?)",
-                (str(world.id), world.name, world.description, str(world.date_added))
+                (str(world.id), world.name, world.description, str(world.date_added),)
             )
             await db.commit()
 
         return world
+    
+
+    async def delete_world_by_id(self, id: uuid.UUID) -> None:
+
+        async with aiosqlite.connect(self.db_conn_path) as db:
+
+            await db.execute(
+                "DELETE FROM worlds WHERE id = ?",
+                (str(id),)
+            )
+            await db.commit()
+
 
 

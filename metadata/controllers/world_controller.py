@@ -1,4 +1,6 @@
 import fastapi
+import uuid
+
 from services.world_service import WorldService
 
 from models.world_response import WorldResponse
@@ -12,15 +14,21 @@ class WorldController():
         
         self.world_service = world_service
         
-        app.post("/world", status_code=201)(self.add_world)
+        app.post("/worlds", status_code=201)(self.add_world)
+        app.delete("/worlds/{id}", status_code=204)(self.delete_world_by_id)
 
 
     async def add_world(self, request: WorldCreateRequest) -> WorldResponse:
         
-        created_world = await self.world_service.add_world(request)
+        added_world = await self.world_service.add_world(request)
 
         return WorldResponse(
-            name = created_world.name,
-            description = created_world.description,
-            date_added = created_world.date_added
+            name = added_world.name,
+            description = added_world.description,
+            date_added = added_world.date_added,
+            id = added_world.id
         )
+    
+
+    async def delete_world_by_id(self, id: uuid.UUID) -> None:
+        await self.world_service.delete_world_by_id(id)

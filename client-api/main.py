@@ -4,14 +4,42 @@
 import config
 import asyncio
 import httpx
+from typing import Callable
+
+
+async def send_request(request: Callable, url: str, *args, **kwargs) -> httpx.Response:
+
+    response: httpx.Response = await request(url, *args, **kwargs)
+    response.raise_for_status()
+
+    return response
+
 
 
 async def main():
-    print(httpx.post(
-        f"http://localhost:8020/world",
-        json={"name": "world", "description": "my first world"}
-        ))
 
+    async with httpx.AsyncClient() as client:
+
+        while True:
+
+            action = input("> ")
+            
+            if action == "list":
+                response = await send_request(client.get, "http://localhost:8020/worlds")
+                for world in response.json():
+                    print("-------------------")
+                    print(f"Name: {world["name"]}")
+                    print(f"Description: {world["description"]}")
+                    print(f"Date Added: {world["date_added"]}")
+                    print(f"Id: {world["id"]}")
+
+            if action == "add":
+                response = await send_request(client.post, "http://localhost:8020/worlds", json={"name": input("Name: "), "description": input("Description: ")})
+                print(response)
+
+            if action == "delete":
+                response = await send_request(client.delete, f"http://localhost:8020/worlds/{input("Id: ")}")
+                print(response)
 
 if __name__ == "__main__":
     asyncio.run(main())

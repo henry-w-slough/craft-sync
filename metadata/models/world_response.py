@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 import datetime
+import uuid
 
 
 class WorldResponse(BaseModel):
@@ -12,3 +13,4 @@ class WorldResponse(BaseModel):
     name: str
     description: str
     date_added: datetime.datetime
+    id: uuid.UUID
