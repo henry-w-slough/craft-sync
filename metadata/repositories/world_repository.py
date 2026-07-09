@@ -40,7 +40,7 @@ class WorldRepository(RepositoryBase):
         async with aiosqlite.connect(self.db_conn_path) as db:
             
             db.row_factory = aiosqlite.Row
-            
+
             sql_result = await db.execute("SELECT * FROM worlds")
             stored_worlds = sql_result.fetchall()
 
@@ -51,8 +51,8 @@ class WorldRepository(RepositoryBase):
                     World(
                         world["name"],
                         world["description"],
-                        world["id"],
-                        world["date_added"]
+                        uuid.UUID(world["id"]),
+                        datetime.datetime.fromisoformat(world["date_added"])
                     )
                 )
                 
@@ -72,36 +72,38 @@ class WorldRepository(RepositoryBase):
         return world
     
 
-    async def update_world(self, world_update_request: WorldUpdateRequest, world_id: uuid.UUID) -> World:
+    async def update_world(self, world_update_request: WorldUpdateRequest, id: uuid.UUID) -> World:
         
         async with aiosqlite.connect(self.db_conn_path) as db:
             
-            #holds the data to be updated within the db
-            fields = {}
+            
+            if world_update_request.name is not None or world_update_request.description is not None:
 
-            #checking which fields are set to be updated
-            if world_update_request.name is not None:
-                fields["name"] = world_update_request.name
-            if world_update_request.description is not None:
-                fields["description"] = world_update_request.description
+                #holds the data to be updated within the db
+                fields = {}
 
-            #creating the SQL call for what will be updated
-            set_clause = ", ".join(f"{column} = ?" for column in fields)
-            #the values passed into the SQl execution
-            values = list(fields.values()) + [str(world_id)]
+                #checking which fields are set to be updated
+                if world_update_request.name is not None:
+                    fields["name"] = world_update_request.name
+                if world_update_request.description is not None:
+                    fields["description"] = world_update_request.description
 
-            await db.execute(
-                f"UPDATE worlds SET {set_clause} WHERE id = ?",
-                values
-            )
-            await db.commit()
+                #creating the SQL call for what will be updated
+                set_clause = ", ".join(f"{column} = ?" for column in fields)
+                #the values passed into the SQl execution
+                values = list(fields.values()) + [str(id)]
+
+                await db.execute(
+                    f"UPDATE worlds SET {set_clause} WHERE id = ?",
+                    values
+                )
+                await db.commit()
 
 
-            #db config for World type return
             db.row_factory = aiosqlite.Row
 
-            #getting row just updated to retunr
-            sql_result = await db.execute("SELECT * FROM worlds WHERE id = ?", (str(world_id),))
+            #getting row just updated to return
+            sql_result = await db.execute("SELECT * FROM worlds WHERE id = ?", (str(id),))
             row = await sql_result.fetchone()
 
             if row is None:

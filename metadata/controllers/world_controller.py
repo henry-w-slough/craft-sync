@@ -50,9 +50,9 @@ class WorldController():
         )
     
 
-    async def update_world(self, request: WorldUpdateRequest, world_id: uuid.UUID) -> WorldResponse:
+    async def update_world(self, request: WorldUpdateRequest, id: uuid.UUID) -> WorldResponse:
 
-        updated_world = await self.world_service.update_world(request, world_id)
+        updated_world = await self.world_service.update_world(request, id)
 
         return WorldResponse(
             name = updated_world.name,

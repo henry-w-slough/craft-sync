@@ -31,9 +31,9 @@ class WorldService:
         )
     
 
-    async def update_world(self, world_update_request: WorldUpdateRequest, world_id: uuid.UUID) -> World:
+    async def update_world(self, world_update_request: WorldUpdateRequest, id: uuid.UUID) -> World:
 
-        return await self.world_repository.update_world(world_update_request, world_id)
+        return await self.world_repository.update_world(world_update_request, id)
     
 
     async def delete_world_by_id(self, id: uuid.UUID) -> None:
