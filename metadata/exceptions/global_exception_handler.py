@@ -13,7 +13,7 @@ def register_exception_handlers(app: FastAPI):
         return JSONResponse(status_code=422, content={"error": "The HTTP request given is formatted incorrectly or provides incorrect data and could not be read."})
     
 
-    @app.exception_handler(Exception)
+    @app.exception_handler(WorldNotFoundException)
     async def world_not_found(request: Request, exc: WorldNotFoundException):
         return JSONResponse(status_code=404, content={"error": "The World attempted for access was not found within the database."})
 

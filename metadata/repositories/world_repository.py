@@ -107,7 +107,7 @@ class WorldRepository(RepositoryBase):
             row = await sql_result.fetchone()
 
             if row is None:
-                raise WorldNotFoundException()
+                raise WorldNotFoundException
 
             return World(
                 row["name"],
@@ -120,11 +120,17 @@ class WorldRepository(RepositoryBase):
     async def delete_world_by_id(self, id: uuid.UUID) -> None:
 
         async with aiosqlite.connect(self.db_conn_path) as db:
+            
 
-            await db.execute(
+            sql_result = await db.execute(
                 "DELETE FROM worlds WHERE id = ?",
                 (str(id),)
             )
+
+            #if the id given does not exist within the database
+            if sql_result.rowcount == 0:
+                raise WorldNotFoundException
+            
             await db.commit()
 
 
