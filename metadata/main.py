@@ -5,14 +5,14 @@ import config
 
 from exceptions import global_exception_handler
 
-from controllers.world_controller import WorldController
-from services.world_service import WorldService
-from repositories.world_repository import WorldRepository
+from metadata.controllers.world_metadata_controller import WorldMetadataController
+from metadata.services.world_metadata_service import WorldMetadataService
+from metadata.repositories.world_metadata_repository import WorldMetadataRepository
 
 from lifespan import create_lifespan
 
 
-world_repository = WorldRepository()
+world_repository = WorldMetadataRepository()
 
 
 app = fastapi.FastAPI(lifespan=create_lifespan([world_repository]))
@@ -21,8 +21,8 @@ app = fastapi.FastAPI(lifespan=create_lifespan([world_repository]))
 global_exception_handler.register_exception_handlers(app)
 
 
-world_service = WorldService(world_repository)
-world_controller = WorldController(app, world_service)
+world_service = WorldMetadataService(world_repository)
+world_controller = WorldMetadataController(app, world_service)
 
 
 if __name__ == "__main__":
