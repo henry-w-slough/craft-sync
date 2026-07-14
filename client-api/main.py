@@ -6,6 +6,9 @@ import httpx
 from typing import Callable
 
 
+backend_address = "http://localhost:8040"
+
+
 async def send_request(request: Callable, url: str, *args, **kwargs) -> httpx.Response:
 
     response: httpx.Response = await request(url, *args, **kwargs)
@@ -23,20 +26,10 @@ async def main():
             action = input("> ").strip().lower()
 
 
-            if action == "list":
-                response = await send_request(client.get, "http://localhost:8020/worlds")
-                for world in response.json():
-                    print("-------------------")
-                    print(f"Name: {world['name']}")
-                    print(f"Description: {world['description']}")
-                    print(f"Date Added: {world['date_added']}")
-                    print(f"Id: {world['id']}")
-
-
-            elif action == "add":
+            if action == "add":
                 response = await send_request(
                     client.post,
-                    "http://localhost:8020/worlds",
+                    backend_address,
                     json={"name": input("Name: "), "description": input("Description: ")},
                 )
                 print(response)
@@ -44,7 +37,7 @@ async def main():
 
             elif action == "delete":
                 world_id = input("Id: ")
-                response = await send_request(client.delete, f"http://localhost:8020/worlds/{world_id}")
+                response = await send_request(client.delete, f"{backend_address}/{world_id}")
                 print(response)
 
 
@@ -63,7 +56,7 @@ async def main():
 
                 response = await send_request(
                     client.patch,
-                    f"http://localhost:8020/worlds/{world_id}",
+                    f"{backend_address}/{world_id}",
                     json=updates,
                 )
                 print(response)
