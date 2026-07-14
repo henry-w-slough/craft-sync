@@ -29,10 +29,10 @@ async def main():
             if action == "add":
                 response = await send_request(
                     client.post,
-                    backend_address,
-                    json={"name": input("Name: "), "description": input("Description: ")},
+                    f"{backend_address}/worlds",
+                    json={"id": input("Id: ")},
                 )
-                print(response)
+                print(response.json())
 
 
             elif action == "delete":
