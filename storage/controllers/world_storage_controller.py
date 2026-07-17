@@ -3,7 +3,7 @@ from models.world_response import WorldResponse
 from models.world_create_request import WorldCreateRequest
 
 import fastapi
-
+import uuid
 
 class WorldStorageController:
 
@@ -12,11 +12,16 @@ class WorldStorageController:
         
         self.world_storage_service = world_storage_service
 
-        app.post("/worlds")(self.add_world)
+        app.post("/worlds", status_code=201)(self.add_world)
+        app.delete("/worlds/{id}", status_code=204)(self.delete_world_by_id)
 
 
-    def add_world(self, request: WorldCreateRequest) -> WorldResponse:
+    async def add_world(self, request: WorldCreateRequest) -> WorldResponse:
 
-        return self.world_storage_service.add_world(request.id)
+        return await self.world_storage_service.add_world(request)
+    
+
+    async def delete_world_by_id(self, id: uuid.UUID) -> None:
+        await self.world_storage_service.delete_world_by_id(id)
         
 

@@ -37,7 +37,7 @@ async def main():
 
             elif action == "delete":
                 world_id = input("Id: ")
-                response = await send_request(client.delete, f"{backend_address}/{world_id}")
+                response = await send_request(client.delete, f"{backend_address}/worlds/{world_id}")
                 print(response)
 
 

@@ -7,8 +7,13 @@ from repositories.world_storage_repository import WorldStorageRepository
 from services.world_storage_service import WorldStorageService
 from controllers.world_storage_controller import WorldStorageController
 
+from exceptions.global_exception_handler import register_exception_handlers
+
 
 app = fastapi.FastAPI()
+
+
+register_exception_handlers(app)
 
 
 world_storage_repository = WorldStorageRepository()
