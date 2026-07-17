@@ -20,6 +20,8 @@ world_storage_repository = WorldStorageRepository()
 world_storage_service = WorldStorageService(world_storage_repository)
 world_storage_controller = WorldStorageController(app, world_storage_service)
 
+print(repr(config.CLOUD_ACCESS_KEY_ID))
+print(repr(config.CLOUD_SECRET_ACCESS_KEY))
 
 if __name__ == "__main__":
     uvicorn.run(app, host=config.HOST, port=config.PORT)

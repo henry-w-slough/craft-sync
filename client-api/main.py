@@ -2,8 +2,12 @@
 #after the backend is complete.
 
 import asyncio
+import aiofiles
+import uuid
+import os
+
 import httpx
-from typing import Callable
+from typing import Callable, AsyncGenerator
 
 
 backend_address = "http://localhost:8040"
@@ -15,6 +19,24 @@ async def send_request(request: Callable, url: str, *args, **kwargs) -> httpx.Re
     response.raise_for_status()
 
     return response
+
+
+async def file_to_chunks(path, chunk_size=8 * 1024 * 1024) -> AsyncGenerator[bytes, None]:
+    async with aiofiles.open(path, "rb") as f:
+        while chunk := await f.read(chunk_size):
+            yield chunk
+
+
+async def connect_to_cloud(url: str):
+
+    async with httpx.AsyncClient() as client:
+        
+            await send_request(
+                client.put,
+                url,
+                content=file_to_chunks("movie.mp4"),
+                headers={"Content-Length": str(os.path.getsize("movie.mp4"))}
+            )
 
 
 async def main():
@@ -30,9 +52,10 @@ async def main():
                 response = await send_request(
                     client.post,
                     f"{backend_address}/worlds",
-                    json={"id": input("Id: ")},
+                    json={"id": str(uuid.uuid4())},
                 )
                 print(response.json())
+                print(await connect_to_cloud(response.json()["presigned_url"]))
 
 
             elif action == "delete":
@@ -56,7 +79,7 @@ async def main():
 
                 response = await send_request(
                     client.patch,
-                    f"{backend_address}/{world_id}",
+                    f"{backend_address}/worlds/{world_id}",
                     json=updates,
                 )
                 print(response)
