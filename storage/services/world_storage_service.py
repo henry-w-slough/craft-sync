@@ -14,7 +14,6 @@ class WorldStorageService:
 
 
     async def add_world(self, world_create_request: WorldCreateRequest) -> WorldResponse:
-
         return await self.world_storage_repository.add_world(world_create_request)
     
 
