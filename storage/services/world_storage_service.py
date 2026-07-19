@@ -1,6 +1,7 @@
 from repositories.world_storage_repository import WorldStorageRepository
 from models.world_response import WorldResponse
 from models.world_create_request import WorldCreateRequest
+from models.world_update_request import WorldUpdateRequest
 
 import uuid
 
@@ -19,4 +20,8 @@ class WorldStorageService:
 
     async def delete_world_by_id(self, id: uuid.UUID) -> None:
         await self.world_storage_repository.delete_world_by_id(id)
+
+
+    async def update_world_by_id(self, world_update_request: WorldUpdateRequest) -> WorldResponse:
+        return await self.world_storage_repository.update_world_by_id(world_update_request)
         

@@ -1,9 +1,12 @@
 from services.world_storage_service import WorldStorageService
+
 from models.world_response import WorldResponse
 from models.world_create_request import WorldCreateRequest
+from models.world_update_request import WorldUpdateRequest
 
 import fastapi
 import uuid
+
 
 class WorldStorageController:
 
@@ -22,5 +25,9 @@ class WorldStorageController:
 
     async def delete_world_by_id(self, id: uuid.UUID) -> None:
         await self.world_storage_service.delete_world_by_id(id)
+
+
+    async def update_world_by_id(self, request: WorldUpdateRequest) -> WorldResponse:
+        return await self.world_storage_service.update_world_by_id(request)
         
 
