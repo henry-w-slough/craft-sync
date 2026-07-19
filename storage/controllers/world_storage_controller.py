@@ -17,17 +17,17 @@ class WorldStorageController:
 
         app.post("/worlds", status_code=201)(self.add_world)
         app.delete("/worlds/{id}", status_code=204)(self.delete_world_by_id)
+        app.put("/worlds/{id}", status_code=200)(self.update_world_by_id)
 
-
-    async def add_world(self, request: WorldCreateRequest) -> WorldResponse:
-        return await self.world_storage_service.add_world(request)
+    async def add_world(self, id: uuid.UUID, request: WorldCreateRequest) -> WorldResponse:
+        return await self.world_storage_service.add_world(id, request)
     
 
     async def delete_world_by_id(self, id: uuid.UUID) -> None:
         await self.world_storage_service.delete_world_by_id(id)
 
 
-    async def update_world_by_id(self, request: WorldUpdateRequest) -> WorldResponse:
-        return await self.world_storage_service.update_world_by_id(request)
+    async def update_world_by_id(self, id:uuid.UUID, request: WorldUpdateRequest) -> WorldResponse:
+        return await self.world_storage_service.update_world_by_id(id, request)
         
 

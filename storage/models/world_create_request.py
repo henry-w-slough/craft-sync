@@ -3,5 +3,5 @@ import uuid
 
 
 class WorldCreateRequest(BaseModel):
-
-    id: uuid.UUID
+    #empty for now, these will be added to later when true data handling is added
+    pass

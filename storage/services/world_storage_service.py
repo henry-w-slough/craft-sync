@@ -14,14 +14,14 @@ class WorldStorageService:
         self.world_storage_repository = world_storage_repository
 
 
-    async def add_world(self, world_create_request: WorldCreateRequest) -> WorldResponse:
-        return await self.world_storage_repository.add_world(world_create_request)
+    async def add_world(self, id: uuid.UUID, world_create_request: WorldCreateRequest) -> WorldResponse:
+        return await self.world_storage_repository.add_world(id, world_create_request)
     
 
     async def delete_world_by_id(self, id: uuid.UUID) -> None:
         await self.world_storage_repository.delete_world_by_id(id)
 
 
-    async def update_world_by_id(self, world_update_request: WorldUpdateRequest) -> WorldResponse:
-        return await self.world_storage_repository.update_world_by_id(world_update_request)
+    async def update_world_by_id(self, id: uuid.UUID, world_update_request: WorldUpdateRequest) -> WorldResponse:
+        return await self.world_storage_repository.update_world_by_id(id, world_update_request)
         

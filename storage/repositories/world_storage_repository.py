@@ -19,17 +19,17 @@ class WorldStorageRepository:
         pass
 
 
-    async def add_world(self, world_create_request: WorldCreateRequest) -> WorldResponse:
+    async def add_world(self, id, world_create_request: WorldCreateRequest) -> WorldResponse:
         
         session = aioboto3.Session()
 
         async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
             
-            await s3_client.put_object(Bucket=config.CLOUD_BUCKET_NAME, Key=f"worlds/{world_create_request.id}")
-            url_to_send = await s3_client.generate_presigned_url("put_object", Params={"Bucket": config.CLOUD_BUCKET_NAME, "Key": f"worlds/{world_create_request.id}"}, ExpiresIn=600)
+            await s3_client.put_object(Bucket=config.CLOUD_BUCKET_NAME, Key=f"worlds/{id}")
+            url_to_send = await s3_client.generate_presigned_url("put_object", Params={"Bucket": config.CLOUD_BUCKET_NAME, "Key": f"worlds/{id}"}, ExpiresIn=600)
 
         return WorldResponse(
-            id = world_create_request.id,
+            id = id,
             presigned_url=url_to_send
         )
 
@@ -48,17 +48,21 @@ class WorldStorageRepository:
                 raise WorldNotFoundException
             
 
-    async def update_world_by_id(self, world_update_request: WorldUpdateRequest) -> WorldResponse:
+    async def update_world_by_id(self, id: uuid.UUID, world_update_request: WorldUpdateRequest) -> WorldResponse:
 
         session = aioboto3.Session()
 
         async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
             
-            await s3_client.put_object(Bucket=config.CLOUD_BUCKET_NAME, Key=f"worlds/{world_update_request.id}")
-            url_to_send = await s3_client.generate_presigned_url("put_object", Params={"Bucket": config.CLOUD_BUCKET_NAME, "Key": f"worlds/{world_update_request.id}"}, ExpiresIn=600)
+            try:
+                await s3_client.head_object(Bucket=config.CLOUD_BUCKET_NAME, Key=f"worlds/{id}")
+                await s3_client.put_object(Bucket=config.CLOUD_BUCKET_NAME, Key=f"worlds/{id}")
+                url_to_send = await s3_client.generate_presigned_url("put_object", Params={"Bucket": config.CLOUD_BUCKET_NAME, "Key": f"worlds/{id}"}, ExpiresIn=600)
+            except ClientError:
+                raise WorldNotFoundException
 
         return WorldResponse(
-            id = world_update_request.id,
+            id = id,
             presigned_url = url_to_send
         )
 

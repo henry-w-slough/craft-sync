@@ -27,15 +27,15 @@ async def file_to_chunks(path, chunk_size=8 * 1024 * 1024) -> AsyncGenerator[byt
             yield chunk
 
 
-async def connect_to_cloud(url: str, data_to_send: AsyncGenerator[bytes, None]):
+async def send_to_cloud(url: str, src_to_send: str):
 
     async with httpx.AsyncClient() as client:
         
             await send_request(
                 client.put,
                 url,
-                content=data_to_send,
-                headers={"Content-Length": str(os.path.getsize("main.py"))}
+                content=file_to_chunks(src_to_send),
+                headers={"Content-Length": str(os.path.getsize(src_to_send))}
             )
 
 
@@ -49,17 +49,19 @@ async def main():
 
 
             if action == "add":
+
                 response = await send_request(
                     client.post,
                     f"{backend_address}/worlds",
                     json={"id": str(uuid.uuid4())},
                 )
+
                 print("---------------- Added World Metadata ----------------")
                 for item in response.json():
                     print(f"{item} -> {response.json()[item]}")
                     print(" ------------------------------------------------------")
 
-                print(await connect_to_cloud(response.json()["presigned_url"], file_to_chunks(input("File: "))))
+                await send_to_cloud(response.json()["presigned_url"], input("File to send: "))
 
 
             elif action == "delete":
@@ -69,10 +71,24 @@ async def main():
 
 
             elif action == "update":
-                
-                url = input("Presigned URL: ")
 
-                await connect_to_cloud(url, file_to_chunks("File to add or override: "))
+                response = await send_request(
+                    client.put,
+                    f"{backend_address}/worlds",
+                    json={
+                        "id": input("Id of world: ")
+                    }
+                )
+
+                print("---------------- Added World Metadata ----------------")
+                for item in response.json():
+                    print(f"{item} -> {response.json()[item]}")
+                    print(" ------------------------------------------------------")
+
+                await send_to_cloud(response.json()["presigned_url"], input("File to send: "))
+
+                
+
 
                 
 
