@@ -52,8 +52,8 @@ async def main():
 
                 response = await send_request(
                     client.post,
-                    f"{backend_address}/worlds",
-                    json={"id": str(uuid.uuid4())},
+                    f"{backend_address}/worlds/{str(uuid.uuid4())}",
+                    json={} #since create request is empty but in use
                 )
 
                 print("---------------- Added World Metadata ----------------")
@@ -74,10 +74,8 @@ async def main():
 
                 response = await send_request(
                     client.put,
-                    f"{backend_address}/worlds",
-                    json={
-                        "id": input("Id of world: ")
-                    }
+                    f"{backend_address}/worlds/{input("Id of world: ")}",
+                    json={}
                 )
 
                 print("---------------- Added World Metadata ----------------")

@@ -15,9 +15,10 @@ class WorldStorageController:
         
         self.world_storage_service = world_storage_service
 
-        app.post("/worlds", status_code=201)(self.add_world)
+        app.post("/worlds/{id}", status_code=201)(self.add_world)
         app.delete("/worlds/{id}", status_code=204)(self.delete_world_by_id)
         app.put("/worlds/{id}", status_code=200)(self.update_world_by_id)
+
 
     async def add_world(self, id: uuid.UUID, request: WorldCreateRequest) -> WorldResponse:
         return await self.world_storage_service.add_world(id, request)
