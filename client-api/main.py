@@ -27,15 +27,15 @@ async def file_to_chunks(path, chunk_size=8 * 1024 * 1024) -> AsyncGenerator[byt
             yield chunk
 
 
-async def connect_to_cloud(url: str):
+async def connect_to_cloud(url: str, data_to_send: AsyncGenerator[bytes, None]):
 
     async with httpx.AsyncClient() as client:
         
             await send_request(
                 client.put,
                 url,
-                content=file_to_chunks("movie.mp4"),
-                headers={"Content-Length": str(os.path.getsize("movie.mp4"))}
+                content=data_to_send,
+                headers={"Content-Length": str(os.path.getsize("main.py"))}
             )
 
 
@@ -54,8 +54,12 @@ async def main():
                     f"{backend_address}/worlds",
                     json={"id": str(uuid.uuid4())},
                 )
-                print(response.json())
-                print(await connect_to_cloud(response.json()["presigned_url"]))
+                print("---------------- Added World Metadata ----------------")
+                for item in response.json():
+                    print(f"{item} -> {response.json()[item]}")
+                    print(" ------------------------------------------------------")
+
+                print(await connect_to_cloud(response.json()["presigned_url"], file_to_chunks(input("File: "))))
 
 
             elif action == "delete":
@@ -66,23 +70,11 @@ async def main():
 
             elif action == "update":
                 
-                world_id = input("Id: ")
-                updates = {}
+                url = input("Presigned URL: ")
 
-                name = input("Name (blank for current): ")
-                description = input("Description (blank for current): ")
+                await connect_to_cloud(url, file_to_chunks("File to add or override: "))
 
-                if name:
-                    updates["name"] = name
-                if description:
-                    updates["description"] = description
-
-                response = await send_request(
-                    client.patch,
-                    f"{backend_address}/worlds/{world_id}",
-                    json=updates,
-                )
-                print(response)
+                
 
 
 
