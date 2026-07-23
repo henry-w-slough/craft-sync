@@ -3,6 +3,8 @@ from services.world_storage_service import WorldStorageService
 from models.world_response import WorldResponse
 from models.world_create_request import WorldCreateRequest
 from models.world_update_request import WorldUpdateRequest
+from models.world_create_response import WorldCreateResponse
+
 
 import fastapi
 import uuid
@@ -20,7 +22,7 @@ class WorldStorageController:
         app.put("/worlds/{id}", status_code=200)(self.update_world_by_id)
 
 
-    async def add_world(self, id: uuid.UUID, request: WorldCreateRequest) -> WorldResponse:
+    async def add_world(self, id: uuid.UUID, request: WorldCreateRequest) -> WorldCreateResponse:
         return await self.world_storage_service.add_world(id, request)
     
 

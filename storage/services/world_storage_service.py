@@ -1,6 +1,8 @@
 from repositories.world_storage_repository import WorldStorageRepository
 from models.world_response import WorldResponse
 from models.world_create_request import WorldCreateRequest
+from models.world_create_response import WorldCreateResponse
+
 from models.world_update_request import WorldUpdateRequest
 
 import uuid
@@ -14,7 +16,7 @@ class WorldStorageService:
         self.world_storage_repository = world_storage_repository
 
 
-    async def add_world(self, id: uuid.UUID, world_create_request: WorldCreateRequest) -> WorldResponse:
+    async def add_world(self, id: uuid.UUID, world_create_request: WorldCreateRequest) -> WorldCreateResponse:
         return await self.world_storage_repository.add_world(id, world_create_request)
     
 

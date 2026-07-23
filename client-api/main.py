@@ -5,6 +5,7 @@ import asyncio
 import aiofiles
 import uuid
 import os
+from pathlib import Path
 
 import httpx
 from typing import Callable, AsyncGenerator
@@ -27,18 +28,6 @@ async def file_to_chunks(path, chunk_size=8 * 1024 * 1024) -> AsyncGenerator[byt
             yield chunk
 
 
-async def send_to_cloud(url: str, src_to_send: str):
-
-    async with httpx.AsyncClient() as client:
-        
-            await send_request(
-                client.put,
-                url,
-                content=file_to_chunks(src_to_send),
-                headers={"Content-Length": str(os.path.getsize(src_to_send))}
-            )
-
-
 async def main():
 
     async with httpx.AsyncClient() as client:
@@ -50,47 +39,31 @@ async def main():
 
             if action == "add":
 
+                world_root_dir = input("world to send: ")
+                root = Path(world_root_dir)
+                paths = [
+                    path.relative_to(root).as_posix()
+                    for path in root.rglob("*")
+                    if path.is_file()
+                ]
+            
                 response = await send_request(
                     client.post,
                     f"{backend_address}/worlds/{str(uuid.uuid4())}",
-                    json={} #since create request is empty but in use
+                    json={"relative_paths": paths} #since create request is empty but in use
                 )
 
-                print("---------------- Added World Metadata ----------------")
-                for item in response.json():
-                    print(f"{item} -> {response.json()[item]}")
-                    print(" ------------------------------------------------------")
+                presigned_urls = response.json()["path_presigned_urls"]
 
-                await send_to_cloud(response.json()["presigned_url"], input("File to send: "))
-
-
-            elif action == "delete":
-                world_id = input("Id: ")
-                response = await send_request(client.delete, f"{backend_address}/worlds/{world_id}")
-                print(response)
-
-
-            elif action == "update":
-
-                response = await send_request(
-                    client.put,
-                    f"{backend_address}/worlds/{input("Id of world: ")}",
-                    json={}
-                )
-
-                print("---------------- Added World Metadata ----------------")
-                for item in response.json():
-                    print(f"{item} -> {response.json()[item]}")
-                    print(" ------------------------------------------------------")
-
-                await send_to_cloud(response.json()["presigned_url"], input("File to send: "))
-
+                for path in presigned_urls:
+                    path_directory = os.path.join(world_root_dir, path)
+                    await send_request(
+                        client.put,
+                        presigned_urls[path],
+                        content = file_to_chunks(path_directory),
+                        headers = {"Content-Length": str(os.path.getsize(path_directory))}
+                    )
                 
-
-
-                
-
-
 
 if __name__ == "__main__":
     asyncio.run(main())
