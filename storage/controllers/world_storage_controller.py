@@ -4,7 +4,7 @@ from models.responses.world_update_response import WorldUpdateResponse
 from models.requests.world_create_request import WorldCreateRequest
 from models.requests.world_update_request import WorldUpdateRequest
 from models.responses.world_create_response import WorldCreateResponse
-
+from models.responses.world_download_response import WorldDownloadResponse
 
 import fastapi
 import uuid
@@ -20,6 +20,7 @@ class WorldStorageController:
         app.post("/worlds/{id}", status_code=201)(self.add_world)
         app.delete("/worlds/{id}", status_code=204)(self.delete_world_by_id)
         app.put("/worlds/{id}", status_code=200)(self.update_world_by_id)
+        app.get("/worlds/{id}", status_code=200)(self.download_world_by_id)
 
 
     async def add_world(self, id: uuid.UUID, request: WorldCreateRequest) -> WorldCreateResponse:
@@ -30,7 +31,9 @@ class WorldStorageController:
         await self.world_storage_service.delete_world_by_id(id)
 
 
-    async def update_world_by_id(self, id:uuid.UUID, request: WorldUpdateRequest) -> WorldUpdateResponse:
+    async def update_world_by_id(self, id: uuid.UUID, request: WorldUpdateRequest) -> WorldUpdateResponse:
         return await self.world_storage_service.update_world_by_id(id, request)
-        
 
+
+    async def download_world_by_id(self, id: uuid.UUID) -> WorldDownloadResponse:
+        return await self.world_storage_service.download_world_by_id(id)

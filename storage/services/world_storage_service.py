@@ -2,6 +2,7 @@ from repositories.world_storage_repository import WorldStorageRepository
 from models.requests.world_create_request import WorldCreateRequest
 from models.responses.world_create_response import WorldCreateResponse
 from models.responses.world_update_response import WorldUpdateResponse
+from models.responses.world_download_response import WorldDownloadResponse
 
 
 from models.requests.world_update_request import WorldUpdateRequest
@@ -27,4 +28,7 @@ class WorldStorageService:
 
     async def update_world_by_id(self, id: uuid.UUID, world_update_request: WorldUpdateRequest) -> WorldUpdateResponse:
         return await self.world_storage_repository.update_world_by_id(id, world_update_request)
-        
+
+
+    async def download_world_by_id(self, id: uuid.UUID) -> WorldDownloadResponse:
+        return await self.world_storage_repository.download_world_by_id(id)

@@ -63,6 +63,41 @@ async def main():
                         content = file_to_chunks(path_directory),
                         headers = {"Content-Length": str(os.path.getsize(path_directory))}
                     )
+
+
+            if action == "update":
+
+                world_id = input("id of world to update: ")
+
+                world_root_dir = input("world folder to send: ")
+                root = Path(world_root_dir)
+                paths = [
+                    path.relative_to(root).as_posix()
+                    for path in root.rglob("*")
+                    if path.is_file()
+                ]
+            
+                response = await send_request(
+                    client.put,
+                    f"{backend_address}/worlds/{world_id}",
+                    json={"relative_paths": paths}
+                )
+
+                presigned_urls = response.json()["path_presigned_urls"]
+
+                for path in presigned_urls:
+                    path_directory = os.path.join(world_root_dir, path)
+                    await send_request(
+                        client.put,
+                        presigned_urls[path],
+                        content = file_to_chunks(path_directory),
+                        headers = {"Content-Length": str(os.path.getsize(path_directory))}
+                    )
+
+
+        
+
+
                 
 
 if __name__ == "__main__":
