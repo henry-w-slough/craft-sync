@@ -2,8 +2,16 @@
 #after the backend is complete.
 
 import asyncio
+import aiofiles
+import uuid
+import os
+from pathlib import Path
+
 import httpx
-from typing import Callable
+from typing import Callable, AsyncGenerator
+
+
+backend_address = "http://localhost:8040"
 
 
 async def send_request(request: Callable, url: str, *args, **kwargs) -> httpx.Response:
@@ -12,6 +20,12 @@ async def send_request(request: Callable, url: str, *args, **kwargs) -> httpx.Re
     response.raise_for_status()
 
     return response
+
+
+async def file_to_chunks(path, chunk_size=8 * 1024 * 1024) -> AsyncGenerator[bytes, None]:
+    async with aiofiles.open(path, "rb") as f:
+        while chunk := await f.read(chunk_size):
+            yield chunk
 
 
 async def main():
@@ -23,52 +37,68 @@ async def main():
             action = input("> ").strip().lower()
 
 
-            if action == "list":
-                response = await send_request(client.get, "http://localhost:8020/worlds")
-                for world in response.json():
-                    print("-------------------")
-                    print(f"Name: {world['name']}")
-                    print(f"Description: {world['description']}")
-                    print(f"Date Added: {world['date_added']}")
-                    print(f"Id: {world['id']}")
+            if action == "add":
 
-
-            elif action == "add":
+                world_root_dir = input("world to send: ")
+                root = Path(world_root_dir)
+                paths = [
+                    path.relative_to(root).as_posix()
+                    for path in root.rglob("*")
+                    if path.is_file()
+                ]
+            
                 response = await send_request(
                     client.post,
-                    "http://localhost:8020/worlds",
-                    json={"name": input("Name: "), "description": input("Description: ")},
+                    f"{backend_address}/worlds/{str(uuid.uuid4())}",
+                    json={"relative_paths": paths} #since create request is empty but in use
                 )
-                print(response)
+
+                presigned_urls = response.json()["path_presigned_urls"]
+
+                for path in presigned_urls:
+                    path_directory = os.path.join(world_root_dir, path)
+                    await send_request(
+                        client.put,
+                        presigned_urls[path],
+                        content = file_to_chunks(path_directory),
+                        headers = {"Content-Length": str(os.path.getsize(path_directory))}
+                    )
 
 
-            elif action == "delete":
-                world_id = input("Id: ")
-                response = await send_request(client.delete, f"http://localhost:8020/worlds/{world_id}")
-                print(response)
+            if action == "update":
 
+                world_id = input("id of world to update: ")
 
-            elif action == "update":
-                
-                world_id = input("Id: ")
-                updates = {}
-
-                name = input("Name (blank for current): ")
-                description = input("Description (blank for current): ")
-
-                if name:
-                    updates["name"] = name
-                if description:
-                    updates["description"] = description
-
+                world_root_dir = input("world folder to send: ")
+                root = Path(world_root_dir)
+                paths = [
+                    path.relative_to(root).as_posix()
+                    for path in root.rglob("*")
+                    if path.is_file()
+                ]
+            
                 response = await send_request(
-                    client.patch,
-                    f"http://localhost:8020/worlds/{world_id}",
-                    json=updates,
+                    client.put,
+                    f"{backend_address}/worlds/{world_id}",
+                    json={"relative_paths": paths}
                 )
-                print(response)
+
+                presigned_urls = response.json()["path_presigned_urls"]
+
+                for path in presigned_urls:
+                    path_directory = os.path.join(world_root_dir, path)
+                    await send_request(
+                        client.put,
+                        presigned_urls[path],
+                        content = file_to_chunks(path_directory),
+                        headers = {"Content-Length": str(os.path.getsize(path_directory))}
+                    )
 
 
+        
+
+
+                
 
 if __name__ == "__main__":
     asyncio.run(main())

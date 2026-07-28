@@ -10,7 +10,7 @@ from repositories.repository_base import RepositoryBase
 from exceptions.world_not_found_exception import WorldNotFoundException
 
 
-class WorldRepository(RepositoryBase):
+class WorldMetadataRepository(RepositoryBase):
 
 
     def __init__(self) -> None:

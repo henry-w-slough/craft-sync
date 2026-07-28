@@ -1,0 +1,100 @@
+from models.responses.world_create_response import WorldCreateResponse
+from models.requests.world_update_request import WorldUpdateRequest
+from models.requests.world_create_request import WorldCreateRequest
+from models.responses.world_update_response import WorldUpdateResponse
+from exceptions.world_not_found_exception import WorldNotFoundException
+from models.responses.world_download_response import WorldDownloadResponse
+
+from botocore.exceptions import ClientError
+
+import uuid
+import aioboto3
+
+import config
+
+
+class WorldStorageRepository:
+
+
+    def __init__(self) -> None:
+        pass
+
+
+    async def add_world(self, id, world_create_request: WorldCreateRequest) -> WorldCreateResponse:
+        
+        session = aioboto3.Session()
+
+        path_urls = {}
+
+        async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
+            
+            for path in world_create_request.relative_paths:
+                path_urls[path] = await s3_client.generate_presigned_url("put_object", Params={"Bucket": config.CLOUD_BUCKET_NAME, "Key": f"worlds/{id}/{path}"}, ExpiresIn=600)
+
+        return WorldCreateResponse(
+            path_presigned_urls=path_urls
+        )
+
+
+    async def delete_world_by_id(self, id: uuid.UUID) -> None:
+
+        session = aioboto3.Session()
+
+        async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
+
+            try:
+                #object verification
+                await s3_client.head_object(Bucket=config.CLOUD_BUCKET_NAME, Key=f"worlds/{id}")
+                await s3_client.delete_object(Bucket=config.CLOUD_BUCKET_NAME, Key=f"worlds/{id}")
+            except ClientError:
+                raise WorldNotFoundException
+            
+
+    async def update_world_by_id(self, id: uuid.UUID, world_update_request: WorldUpdateRequest) -> WorldUpdateResponse:
+
+        session = aioboto3.Session()
+
+        path_urls = {}
+
+        async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
+            
+            for path in world_update_request.relative_paths:
+                path_urls[path] = await s3_client.generate_presigned_url("put_object", Params={"Bucket": config.CLOUD_BUCKET_NAME, "Key": f"worlds/{id}/{path}"}, ExpiresIn=600)
+
+        return WorldUpdateResponse(
+            path_presigned_urls=path_urls
+        )
+
+
+    async def download_world_by_id(self, id: uuid.UUID) -> WorldDownloadResponse:
+
+
+        session = aioboto3.Session()
+
+        path_urls = {}
+
+        async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
+            
+            client = aioboto3.Session()
+
+            download_keys = []
+            download_urls = [] 
+
+            async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
+                
+                paginator = s3_client.get_paginator("list_objects_v2")
+                async for page in paginator.paginate(Bucket=config.CLOUD_BUCKET_NAME, Prefix=str(id)):
+                    for object in page.get("Contents", []):
+                        download_keys.append(object["Key"])
+            
+
+        return WorldDownloadResponse(   
+            presigned_urls = []
+        )
+
+
+
+
+
+
+

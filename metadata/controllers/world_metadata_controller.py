@@ -1,19 +1,19 @@
 import fastapi
 import uuid
 
-from services.world_service import WorldService
+from services.world_metadata_service import WorldMetadataService
 
 from models.world_response import WorldResponse
 from models.world_create_request import WorldCreateRequest
 from models.world_update_request import WorldUpdateRequest
 
 
-class WorldController():
+class WorldMetadataController():
 
 
-    def __init__(self, app: fastapi.FastAPI, world_service: WorldService) -> None:
+    def __init__(self, app: fastapi.FastAPI, world_metadata_service: WorldMetadataService) -> None:
         
-        self.world_service = world_service
+        self.world_metadata_service = world_metadata_service
         
         app.get("/worlds", status_code=200)(self.get_all_worlds)
         app.post("/worlds", status_code=201)(self.add_world)
@@ -23,7 +23,7 @@ class WorldController():
 
     async def get_all_worlds(self) -> list[WorldResponse]:
 
-        all_worlds = await self.world_service.get_all_worlds()
+        all_worlds = await self.world_metadata_service.get_all_worlds()
 
         world_responses = []
         for world in all_worlds:
@@ -40,7 +40,7 @@ class WorldController():
 
     async def add_world(self, request: WorldCreateRequest) -> WorldResponse:
         
-        added_world = await self.world_service.add_world(request)
+        added_world = await self.world_metadata_service.add_world(request)
 
         return WorldResponse(
             name = added_world.name,
@@ -52,7 +52,7 @@ class WorldController():
 
     async def update_world(self, request: WorldUpdateRequest, id: uuid.UUID) -> WorldResponse:
 
-        updated_world = await self.world_service.update_world(request, id)
+        updated_world = await self.world_metadata_service.update_world(request, id)
 
         return WorldResponse(
             name = updated_world.name,
@@ -63,4 +63,4 @@ class WorldController():
     
 
     async def delete_world_by_id(self, id: uuid.UUID) -> None:
-        await self.world_service.delete_world_by_id(id)
+        await self.world_metadata_service.delete_world_by_id(id)
