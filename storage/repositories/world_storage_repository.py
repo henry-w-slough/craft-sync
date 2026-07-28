@@ -75,14 +75,21 @@ class WorldStorageRepository:
 
         async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
             
-            for path in world_create_request.relative_paths:
-                path_urls[path] = await s3_client.generate_presigned_url("put_object", Params={"Bucket": config.CLOUD_BUCKET_NAME, "Key": f"worlds/{id}/{path}"}, ExpiresIn=600)
+            client = aioboto3.Session()
 
+            download_keys = []
+            download_urls = [] 
 
-        return WorldDownloadResponse(
-            presigned_urls=[
+            async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
+                
+                paginator = s3_client.get_paginator("list_objects_v2")
+                async for page in paginator.paginate(Bucket=config.CLOUD_BUCKET_NAME, Prefix=str(id)):
+                    for object in page.get("Contents", []):
+                        download_keys.append(object["Key"])
+            
 
-                ]
+        return WorldDownloadResponse(   
+            presigned_urls = []
         )
 
 
