@@ -71,25 +71,21 @@ class WorldStorageRepository:
 
         session = aioboto3.Session()
 
-        path_urls = {}
-
         async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
-            
-            client = aioboto3.Session()
 
-            download_keys = []
-            download_urls = [] 
+            presigned_urls = {}
 
             async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
-                
-                paginator = s3_client.get_paginator("list_objects_v2")
-                async for page in paginator.paginate(Bucket=config.CLOUD_BUCKET_NAME, Prefix=str(id)):
-                    for object in page.get("Contents", []):
-                        download_keys.append(object["Key"])
-            
 
+                #the whole concept is to get the paths so you can reference them from s2 to get presigned urls.
+                paginator = s3_client.get_paginator("list_objects_v2")
+                async for page in paginator.paginate(Bucket=config.CLOUD_BUCKET_NAME, Prefix=f"worlds/{str(id)}"):
+                    for object in page.get("Contents", []):
+                        presigned_urls[object["Key"].removeprefix("worlds/")] = await s3_client.generate_presigned_url("get_object", Params={"Bucket": config.CLOUD_BUCKET_NAME, "Key": f"{object["Key"]}"}, ExpiresIn=600)
+
+                
         return WorldDownloadResponse(   
-            presigned_urls = []
+            path_presigned_urls = presigned_urls
         )
 
 

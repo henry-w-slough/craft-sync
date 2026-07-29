@@ -95,6 +95,32 @@ async def main():
                     )
 
 
+            if action == "download":
+
+                response = await(
+                    client.get(f"{backend_address}/worlds/{input("Id of world to download: ")}")
+                )
+
+                presigned_url_paths = response.json()["path_presigned_urls"]
+
+                for path in presigned_url_paths:
+
+                    print(presigned_url_paths[path])
+                    cloud_response = await send_request(
+                        client.post,
+                        presigned_url_paths[path]
+                    )
+
+                    with open(path, "wb") as file:
+
+                        file.write(cloud_response.content)
+                        
+
+
+
+                   
+
+
         
 
 

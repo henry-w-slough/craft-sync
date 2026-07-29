@@ -3,4 +3,4 @@ from pydantic import BaseModel
 
 class WorldDownloadResponse(BaseModel):
 
-    presigned_urls: list[str]
+    path_presigned_urls: dict[str, str]
