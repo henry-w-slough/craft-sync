@@ -97,8 +97,9 @@ async def main():
 
             if action == "download":
 
-                response = await(
-                    client.get(f"{backend_address}/worlds/{input("Id of world to download: ")}")
+                response = await send_request(
+                    client.get,
+                    f"{backend_address}/worlds/{input("Id of world to download: ")}"
                 )
 
                 presigned_url_paths = response.json()["path_presigned_urls"]
@@ -116,7 +117,15 @@ async def main():
                         file.write(cloud_response.content)
                         
 
+            if action == "delete":
 
+                response = await send_request(
+                    client.delete,
+                    f"{backend_address}/worlds/{input("Id of world to delete: ")}"
+                )
+
+                for url in response.json()["presigned_urls"]:
+                    print(url)
 
                    
 
