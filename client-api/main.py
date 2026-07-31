@@ -126,7 +126,6 @@ async def main():
                     f"{backend_address}/worlds/{input("Id of world to delete: ")}"
                 )
 
-                print(response)
 
                    
 
