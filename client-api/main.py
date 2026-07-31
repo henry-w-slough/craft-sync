@@ -110,13 +110,12 @@ async def main():
 
                 for path in presigned_url_paths:
 
-                    os.makedirs(os.path.join(download_root, os.path.dirname(path)), exist_ok=True)
                     cloud_response = await send_request(
                         client.get,
                         presigned_url_paths[path]
                     )
 
-                    with open(path, "wb") as file:
+                    with open(f"{download_root}/{path}", "wb") as file:
                         file.write(cloud_response.content)
                         
 
