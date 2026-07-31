@@ -6,6 +6,7 @@ from exceptions.world_not_found_exception import WorldNotFoundException
 from models.responses.world_download_response import WorldDownloadResponse
 
 from botocore.exceptions import ClientError
+from botocore.config import Config
 
 import uuid
 import aioboto3
@@ -45,7 +46,6 @@ class WorldStorageRepository:
             paginator = s3_client.get_paginator("list_objects_v2")
             async for page in paginator.paginate(Bucket=config.CLOUD_BUCKET_NAME, Prefix=f"worlds/{str(id)}"):
                 for object in page["Contents"]: 
-                    print(object["Key"])
                     #setting key pair for s3 translation
                     object_keys.append({"Key": object["Key"]})
 
@@ -71,19 +71,17 @@ class WorldStorageRepository:
 
     async def download_world_by_id(self, id: uuid.UUID) -> WorldDownloadResponse:
 
+        presigned_urls = {}
+
+        #we use region specification
         async with self.session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
 
-            presigned_urls = {}
-
-            async with session.client("s3", endpoint_url=config.CLOUD_ENDPOINT_URL, aws_access_key_id=config.CLOUD_ACCESS_KEY_ID, aws_secret_access_key=config.CLOUD_SECRET_ACCESS_KEY) as s3_client: #type: ignore
-
-                #the whole concept is to get the paths so you can reference them from s2 to get presigned urls.
-                paginator = s3_client.get_paginator("list_objects_v2")
-                async for page in paginator.paginate(Bucket=config.CLOUD_BUCKET_NAME, Prefix=f"worlds/{str(id)}"):
-                    for object in page.get("Contents", []):
-                        presigned_urls[object["Key"].removeprefix("worlds/")] = await s3_client.generate_presigned_url("get_object", Params={"Bucket": config.CLOUD_BUCKET_NAME, "Key": f"{object["Key"]}"}, ExpiresIn=600)
-
-                
+            #the whole concept is to get the paths so you can reference them from s2 to get presigned urls.
+            paginator = s3_client.get_paginator("list_objects_v2")
+            async for page in paginator.paginate(Bucket=config.CLOUD_BUCKET_NAME, Prefix=f"worlds/{str(id)}"):
+                for object in page.get("Contents", []):
+                    presigned_urls[object["Key"].removeprefix(f"worlds/{id}/")] = await s3_client.generate_presigned_url("get_object", Params={"Bucket": config.CLOUD_BUCKET_NAME, "Key": object["Key"]})
+            
         return WorldDownloadResponse(   
             path_presigned_urls = presigned_urls
         )

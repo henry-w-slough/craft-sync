@@ -17,6 +17,7 @@ backend_address = "http://localhost:8040"
 async def send_request(request: Callable, url: str, *args, **kwargs) -> httpx.Response:
 
     response: httpx.Response = await request(url, *args, **kwargs)
+
     response.raise_for_status()
 
     return response
@@ -104,16 +105,18 @@ async def main():
 
                 presigned_url_paths = response.json()["path_presigned_urls"]
 
+                download_root = input(f"Directory to download to: ")
+                os.makedirs(download_root, exist_ok=True)
+
                 for path in presigned_url_paths:
 
-                    print(presigned_url_paths[path])
+                    os.makedirs(os.path.join(download_root, os.path.dirname(path)), exist_ok=True)
                     cloud_response = await send_request(
-                        client.post,
+                        client.get,
                         presigned_url_paths[path]
                     )
 
                     with open(path, "wb") as file:
-
                         file.write(cloud_response.content)
                         
 
@@ -124,8 +127,7 @@ async def main():
                     f"{backend_address}/worlds/{input("Id of world to delete: ")}"
                 )
 
-                for url in response.json()["presigned_urls"]:
-                    print(url)
+                print(response)
 
                    
 
