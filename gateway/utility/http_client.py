@@ -1,9 +1,15 @@
 import httpx
-from typing import Callable
 
 
-async def send_request(request_method: Callable, url: str, *args, **kwargs) -> None:
+async def send_request(connection: httpx.AsyncClient, method: str, url: str, *args, **kwargs) -> httpx.Response:
 
-    async with httpx.AsyncClient() as client:
+    async with connection as client:
+
+        response = await client.request(method, url, *args, **kwargs)
+        response.raise_for_status()
+
+        
+        return response
+
         
         
