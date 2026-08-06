@@ -17,9 +17,7 @@ backend_address = "http://localhost:8040"
 async def send_request(request: Callable, url: str, *args, **kwargs) -> httpx.Response:
 
     response: httpx.Response = await request(url, *args, **kwargs)
-
     response.raise_for_status()
-
     return response
 
 
