@@ -8,7 +8,8 @@ async def send_request(connection: httpx.AsyncClient, method: str, url: str, *ar
         response = await client.request(method, url, *args, **kwargs)
         response.raise_for_status()
 
-        
+        #future error handling between gateway and backends
+
         return response
 
         

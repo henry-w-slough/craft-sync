@@ -14,10 +14,16 @@ class WorldRepository:
 
     async def add_world(self) -> None:
 
-        metadata_request = await http_client.send_request(
+        metadata_response = await http_client.send_request(
             self.client_connection,
-            self.client_connection.get,
+            "post",
             f"{config.METADATA_ADDRESS}/worlds"
+        )
+
+        storage_response = await http_client.send_request(
+            self.client_connection,
+            "post",
+            
         )
 
         
